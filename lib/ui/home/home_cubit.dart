@@ -4,11 +4,14 @@ import 'package:elephant_collar/ui/home/home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   final FirebaseFirestore firestore;
+  final Location location;
 
-  HomeCubit({required this.firestore}) : super(HomeState());
+  HomeCubit({required this.firestore, required this.location})
+      : super(HomeState());
 
   Future<void> requestLocationPermission() async {
     final permission = await Geolocator.checkPermission();
@@ -21,7 +24,15 @@ class HomeCubit extends Cubit<HomeState> {
                 ? HomeStatus.onGetCurrentLocationWithCollarsLocation
                 : HomeStatus.onGetCurrentLocation,
             currentLocation: LatLng(location.latitude, location.longitude)));
+      } else {
+        final enable = await location.requestService();
+        if (enable) {
+          await requestLocationPermission();
+        }
       }
+    } else {
+      await Geolocator.requestPermission();
+      await requestLocationPermission();
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:elephant_collar/utils/map_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -13,9 +14,14 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     GoogleMapController? googleMapController;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Collar Alert"),
+      ),
       body: SafeArea(
+        bottom: false,
         child: BlocProvider(
-          create: (context) => HomeCubit(firestore: FirebaseFirestore.instance)
+          create: (context) => HomeCubit(
+              firestore: FirebaseFirestore.instance, location: Location())
             ..requestLocationPermission()
             ..getCollarsLocation(),
           child: BlocConsumer<HomeCubit, HomeState>(
