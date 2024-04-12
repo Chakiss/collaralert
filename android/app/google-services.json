@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717550852399",
+    "project_id": "locate-alert",
+    "storage_bucket": "locate-alert.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717550852399:android:c4487a93491b0152c6a9da",
+        "android_client_info": {
+          "package_name": "com.qoofhouse.collaralert"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1m9ol-i9Kpr9wKhTZnjg51fP7bM7Euro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
