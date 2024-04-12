@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/ui/home/home_cubit.dart';
 import 'package:elephant_collar/ui/home/home_state.dart';
 import 'package:elephant_collar/utils/map_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:timeago/timeago.dart' as timeAgo;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -67,6 +69,9 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(
+                    height: 4,
+                  ),
                   Expanded(
                       child: ListView.builder(
                     itemCount: state.list?.length ?? 0,
@@ -74,17 +79,90 @@ class HomePage extends StatelessWidget {
                       final collar = state.list![index];
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 8),
+                            horizontal: 20, vertical: 12),
                         child: Column(
                           children: [
                             Row(
                               children: [
-                                Text("Collar ID : ${collar.id}"),
-                                const SizedBox(width: 24),
+                                Expanded(
+                                    child: Text("Collar ID : ${collar.id}")),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
+                                const Text("Distance: "),
+                                Expanded(
+                                  child: Text(
+                                    "${MapUtils.getDistance(state.currentLocation, collar.latLng).toStringAsFixed(2)} KM",
+                                    style: TextStyle(
+                                        color: _getTextColorByDistance(
+                                            MapUtils.getDistance(
+                                                state.currentLocation,
+                                                collar.latLng))),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
                                 Expanded(
                                     child: Text(
-                                        "Distance: ${MapUtils.getDistance(state.currentLocation, collar.latLng)}"))
+                                        "Current Produced: ${collar.currentProduced}"))
                               ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text(
+                                        "Current Used: ${collar.currentUsed}"))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text(
+                                        "Voltage Produced: ${collar.voltageProduced}"))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text(
+                                        "Voltage Produced: ${collar.voltageUsed}"))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Text(
+                                        "Last Update: ${collar.dateTime?.toDate() != null ? timeAgo.format(collar.dateTime!.toDate()) : ""}"))
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 12,
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: 0.5,
+                              color: Colors.black.withOpacity(0.5),
                             )
                           ],
                         ),
@@ -99,4 +177,20 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
+
+Color? _getTextColorByDistance(double distance) {
+  if (distance >= 801 && distance <= 999) {
+    return Colors.green;
+  }
+  if (distance >= 501 && distance <= 800) {
+    return Colors.yellow;
+  }
+  if (distance >= 251 && distance <= 500) {
+    return Colors.red;
+  }
+  if (distance >= 0 && distance <= 500) {
+    return Colors.red;
+  }
+  return null;
 }
