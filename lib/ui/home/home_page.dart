@@ -2,12 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/ui/home/home_cubit.dart';
 import 'package:elephant_collar/ui/home/home_state.dart';
 import 'package:elephant_collar/utils/map_utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:timeago/timeago.dart' as timeAgo;
+import 'package:timeago/timeago.dart' as time_ago;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -153,7 +152,7 @@ class HomePage extends StatelessWidget {
                               children: [
                                 Expanded(
                                     child: Text(
-                                        "Last Update: ${collar.dateTime?.toDate() != null ? timeAgo.format(collar.dateTime!.toDate()) : ""}"))
+                                        "Last Update: ${collar.dateTime?.toDate() != null ? time_ago.format(collar.dateTime!.toDate()) : ""}"))
                               ],
                             ),
                             const SizedBox(
