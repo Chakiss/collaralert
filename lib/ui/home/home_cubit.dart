@@ -1,29 +1,48 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/model/collar_model.dart';
 import 'package:elephant_collar/ui/home/home_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 class HomeCubit extends Cubit<HomeState> {
+  final FirebaseAuth firebaseAuth;
   final FirebaseFirestore firestore;
+  final FirebaseMessaging firebaseMessaging;
   final Location location;
 
-  HomeCubit({required this.firestore, required this.location})
-      : super(HomeState());
+  HomeCubit({
+    required this.firebaseAuth,
+    required this.firestore,
+    required this.firebaseMessaging,
+    required this.location,
+  }) : super(HomeState());
+
+  Future<void> loginAnonymously() async {
+    if (firebaseAuth.currentUser == null) {
+      final credential = await firebaseAuth.signInAnonymously();
+      final userId = credential.user?.uid;
+      if (userId?.isNotEmpty == true) {
+        await firestore
+            .collection("Users")
+            .doc(userId!)
+            .set({"date_time": Timestamp.now()});
+      }
+    } else {
+      final token = await firebaseMessaging.getToken();
+      await updateUserInformation({"fcm_token": token});
+    }
+  }
 
   Future<void> requestLocationPermission() async {
     final permission = await Geolocator.checkPermission();
     if (permission != LocationPermission.denied &&
         permission != LocationPermission.deniedForever) {
       if (await Geolocator.isLocationServiceEnabled()) {
-        final location = await Geolocator.getCurrentPosition();
-        emit(state.copyWith(
-            status: state.list?.isNotEmpty == true
-                ? HomeStatus.onGetCurrentLocationWithCollarsLocation
-                : HomeStatus.onGetCurrentLocation,
-            currentLocation: LatLng(location.latitude, location.longitude)));
+        getCurrentLocation();
       } else {
         final enable = await location.requestService();
         if (enable) {
@@ -34,6 +53,17 @@ class HomeCubit extends Cubit<HomeState> {
       await Geolocator.requestPermission();
       await requestLocationPermission();
     }
+  }
+
+  Future<void> getCurrentLocation() async {
+    final location = await Geolocator.getCurrentPosition();
+    await updateUserInformation(
+        {"latlong": GeoPoint(location.latitude, location.longitude)});
+    emit(state.copyWith(
+        status: state.list?.isNotEmpty == true
+            ? HomeStatus.onGetCurrentLocationWithCollarsLocation
+            : HomeStatus.onGetCurrentLocation,
+        currentLocation: LatLng(location.latitude, location.longitude)));
   }
 
   Future<void> getCollarsLocation() async {
@@ -59,6 +89,16 @@ class HomeCubit extends Cubit<HomeState> {
           list: list));
     } else {
       emit(state.copyWith(status: HomeStatus.initial, list: list));
+    }
+  }
+
+  Future<void> updateUserInformation(Map<String, dynamic> data) async {
+    final userId = firebaseAuth.currentUser?.uid;
+    if (userId?.isNotEmpty == true) {
+      await firestore
+          .collection("Users")
+          .doc(userId!)
+          .update(data..addAll({"last_update": Timestamp.now()}));
     }
   }
 }

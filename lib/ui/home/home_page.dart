@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/ui/home/home_cubit.dart';
 import 'package:elephant_collar/ui/home/home_state.dart';
 import 'package:elephant_collar/utils/map_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:timeago/timeago.dart' as time_ago;
 
 class HomePage extends StatelessWidget {
@@ -14,17 +14,47 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     GoogleMapController? googleMapController;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Collar Alert"),
-      ),
-      body: SafeArea(
-        bottom: false,
-        child: BlocProvider(
-          create: (context) => HomeCubit(
-              firestore: FirebaseFirestore.instance, location: Location())
-            ..requestLocationPermission()
-            ..getCollarsLocation(),
+    context.read<HomeCubit>()
+      ..loginAnonymously()
+      ..requestLocationPermission()
+      ..getCollarsLocation();
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        Fluttertoast.showToast(
+            msg: "ระบบกำลังบันทึกตัวแหน่งล่าสุดของท่านและออกจากแอพพลิเคชั่น",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.black,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        context.read<HomeCubit>().getCurrentLocation().then((value) {
+          Future.delayed(const Duration(milliseconds: 1000), () {
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+          });
+        });
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Collar Alert"),
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.refresh_outlined,
+                color: Colors.black,
+              ),
+              onPressed: () {
+                final cubit = context.read<HomeCubit>();
+                cubit
+                    .getCurrentLocation()
+                    .then((value) => cubit.getCollarsLocation());
+              },
+            )
+          ],
+        ),
+        body: SafeArea(
+          bottom: false,
           child: BlocConsumer<HomeCubit, HomeState>(
             listener: (context, state) {
               switch (state.status) {
