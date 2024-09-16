@@ -1,6 +1,8 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/model/collar_model.dart';
 import 'package:elephant_collar/ui/home/home_state.dart';
+import 'package:elephant_collar/utils/map_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,12 +15,14 @@ class HomeCubit extends Cubit<HomeState> {
   final FirebaseFirestore firestore;
   final FirebaseMessaging firebaseMessaging;
   final Location location;
+  final AudioPlayer audioPlayer;
 
   HomeCubit({
     required this.firebaseAuth,
     required this.firestore,
     required this.firebaseMessaging,
     required this.location,
+    required this.audioPlayer,
   }) : super(HomeState());
 
   Future<void> loginAnonymously() async {
@@ -87,8 +91,32 @@ class HomeCubit extends Cubit<HomeState> {
       emit(state.copyWith(
           status: HomeStatus.onGetCurrentLocationWithCollarsLocation,
           list: list));
+      // for (var data in list) {
+      //   if (MapUtils.getDistance(state.currentLocation, data.latLng) <= 500) {
+      //     playSound();
+      //     break;
+      //   }
+      // }
     } else {
       emit(state.copyWith(status: HomeStatus.initial, list: list));
+    }
+  }
+
+  Future<void> playSound() async {
+    if (!state.isPlayingSound && !state.isPause) {
+      emit(state.copyWith(isPlayingSound: true));
+      await audioPlayer.play(AssetSource(("sound/alert_sound.mp3")));
+      emit(state.copyWith(isPlayingSound: false));
+      await Future.delayed(const Duration(seconds: 23), () async {
+        if (!state.isPause) {
+          for (var data in state.list ?? []) {
+            if (MapUtils.getDistance(state.currentLocation, data.latLng) <= 500) {
+              playSound();
+              break;
+            }
+          }
+        }
+      });
     }
   }
 
@@ -100,5 +128,9 @@ class HomeCubit extends Cubit<HomeState> {
           .doc(userId!)
           .update(data..addAll({"last_update": Timestamp.now()}));
     }
+  }
+
+  void onPause() {
+    emit(state.copyWith(isPause: true));
   }
 }

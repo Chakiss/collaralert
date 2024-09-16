@@ -5,27 +5,36 @@ class HomeState {
   final HomeStatus status;
   final List<CollarModel>? list;
   final LatLng currentLocation;
+  final bool isPlayingSound;
+  final bool isPause;
 
   HomeState({
     this.status = HomeStatus.initial,
     this.list,
     this.currentLocation = const LatLng(0.000, 0.000),
+    this.isPlayingSound = false,
+    this.isPause = false,
   });
 
   HomeState copyWith({
     HomeStatus? status,
     List<CollarModel>? list,
     LatLng? currentLocation,
+    bool? isPlayingSound,
+    bool? isPause,
   }) {
     return HomeState(
-        status: status ?? this.status,
-        list: list ?? this.list,
-        currentLocation: currentLocation ?? this.currentLocation);
+      status: status ?? this.status,
+      list: list ?? this.list,
+      currentLocation: currentLocation ?? this.currentLocation,
+      isPlayingSound: isPlayingSound ?? this.isPlayingSound,
+      isPause: isPause ?? this.isPause,
+    );
   }
 }
 
 enum HomeStatus {
   initial,
   onGetCurrentLocation,
-  onGetCurrentLocationWithCollarsLocation
+  onGetCurrentLocationWithCollarsLocation,
 }

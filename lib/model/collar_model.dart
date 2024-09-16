@@ -32,10 +32,18 @@ class CollarModel {
         id: id,
         latLng: LatLng(
             snapshot["latitude"] as double, snapshot["longitude"] as double),
-        currentProduced: (snapshot["current_produced"] as double?) ?? 0.00,
-        currentUsed: (snapshot["current_used"] as double?) ?? 0.00,
-        voltageProduced: (snapshot["voltage_produced"] as double?) ?? 0.00,
-        voltageUsed: (snapshot["voltage_used"] as double?) ?? 0.00,
+        currentProduced: _getNumberValue(snapshot["current_produced"]),
+        currentUsed: _getNumberValue(snapshot["current_used"]),
+        voltageProduced: _getNumberValue(snapshot["voltage_produced"]),
+        voltageUsed: _getNumberValue(snapshot["voltage_used"]),
         dateTime: snapshot["date_time"] as Timestamp?);
+  }
+}
+
+double _getNumberValue(dynamic value) {
+  if (value is int?) {
+    return (value)?.toDouble() ?? 0.00;
+  } else {
+    return value as double? ?? 0.00;
   }
 }

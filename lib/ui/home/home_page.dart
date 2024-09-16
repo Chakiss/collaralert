@@ -6,13 +6,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as time_ago;
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget with WidgetsBindingObserver {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
+    final decimalFormat = NumberFormat("#,###.##");
     GoogleMapController? googleMapController;
     context.read<HomeCubit>()
       ..loginAnonymously()
@@ -125,7 +132,8 @@ class HomePage extends StatelessWidget {
                                 const Text("Distance: "),
                                 Expanded(
                                   child: Text(
-                                    "${MapUtils.getDistance(state.currentLocation, collar.latLng).toStringAsFixed(2)} KM",
+                                    // "${MapUtils.getDistance(state.currentLocation, collar.latLng).toStringAsFixed(2)} KM",
+                                    "${decimalFormat.format(MapUtils.getDistance(state.currentLocation, collar.latLng))} KM",
                                     style: TextStyle(
                                         color: _getTextColorByDistance(
                                             MapUtils.getDistance(
@@ -205,6 +213,22 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        context.read<HomeCubit>().onPause();
+        break;
+      case AppLifecycleState.detached:
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
   }
 }
 

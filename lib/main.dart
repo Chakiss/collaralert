@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:elephant_collar/ui/home/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,10 +29,11 @@ Future<void> main() async {
   if (Platform.isAndroid) {
     _createNotificationChannel(flutterLocalNotificationsPlugin);
   }
+  final audioPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
   FirebaseMessaging.onMessage.listen(
     (event) async {
       await _firebaseMessagingForegroundHandler(
-          flutterLocalNotificationsPlugin, event);
+          flutterLocalNotificationsPlugin, event, audioPlayer);
     },
   );
   FirebaseMessaging.onBackgroundMessage(
@@ -40,8 +42,10 @@ Future<void> main() async {
           flutterLocalNotificationsPlugin, message);
     },
   );
-  runApp(
-      MyApp(flutterLocalNotificationsPlugin: flutterLocalNotificationsPlugin));
+  runApp(MyApp(
+    flutterLocalNotificationsPlugin: flutterLocalNotificationsPlugin,
+    audioPlayer: audioPlayer,
+  ));
 }
 
 Future<void> _requestPermissions(
@@ -87,9 +91,14 @@ Future<void> _createNotificationChannel(
 
 Future<void> _firebaseMessagingForegroundHandler(
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
-    RemoteMessage message) async {
+    RemoteMessage message,
+    AudioPlayer audioPlayer) async {
   print("Foreground Message");
   print("Message data: ${message.data}");
+  if ((message.data["sound"] as String?) == "alarm") {
+    await audioPlayer.release();
+    await audioPlayer.play(AssetSource("sound/alert_sound.mp3"));
+  }
   await _showNotification(flutterLocalNotificationsPlugin, message);
 }
 
@@ -150,8 +159,13 @@ Future<void> _showNotificationIOS(
 
 class MyApp extends StatelessWidget {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final AudioPlayer audioPlayer;
 
-  const MyApp({required this.flutterLocalNotificationsPlugin, super.key});
+  const MyApp({
+    required this.flutterLocalNotificationsPlugin,
+    required this.audioPlayer,
+    super.key,
+  });
 
   // This widget is the root of your application.
   @override
@@ -170,11 +184,14 @@ class MyApp extends StatelessWidget {
         iOS: initializationSettingsDarwin));
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => HomeCubit(
-            firebaseAuth: FirebaseAuth.instance,
-            firestore: FirebaseFirestore.instance,
-            firebaseMessaging: FirebaseMessaging.instance,
-            location: Location()),)
+        BlocProvider(
+          create: (context) => HomeCubit(
+              firebaseAuth: FirebaseAuth.instance,
+              firestore: FirebaseFirestore.instance,
+              firebaseMessaging: FirebaseMessaging.instance,
+              audioPlayer: audioPlayer,
+              location: Location()),
+        )
       ],
       child: MaterialApp(
         title: 'Collar Alert',
