@@ -70,6 +70,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '717550852399',
     projectId: 'locate-alert',
     storageBucket: 'locate-alert.appspot.com',
-    iosBundleId: 'com.qoofhouse.collaralert.elephantCollar',
+    iosBundleId: 'com.qoofhouse.collaralert',
   );
 }
