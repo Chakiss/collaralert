@@ -73,30 +73,37 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> getCollarsLocation() async {
     final List<CollarModel> list = [];
     final collars = await firestore.collection("Collars").get();
+
     await Future.forEach(collars.docs, (element) async {
       final snapshot = await element.reference
           .collection("latest_location")
           .doc("current")
           .get();
+
       if (snapshot.exists) {
-        final latitude = snapshot["latitude"] as double?;
-        final longitude = snapshot["longitude"] as double?;
-        if (latitude != null && longitude != null) {
+        // Check if the value is an int and cast it to double accordingly
+        final latitude = (snapshot["latitude"] is int)
+            ? (snapshot["latitude"] as int).toDouble()
+            : snapshot["latitude"] as double?;
+        final longitude = (snapshot["longitude"] is int)
+            ? (snapshot["longitude"] as int).toDouble()
+            : snapshot["longitude"] as double?;
+
+        // Remove from list if latitude or longitude is null, 0, or 0.0
+        if (latitude != null &&
+            longitude != null &&
+            latitude != 0 &&
+            longitude != 0) {
           list.add(CollarModel.fromSnapshot(element.id, snapshot));
         }
       }
     });
-    if (state.currentLocation.latitude != 0.000 &&
-        state.currentLocation.longitude != 0.000) {
+
+    if (state.currentLocation.latitude != 0.0 &&
+        state.currentLocation.longitude != 0.0) {
       emit(state.copyWith(
           status: HomeStatus.onGetCurrentLocationWithCollarsLocation,
           list: list));
-      // for (var data in list) {
-      //   if (MapUtils.getDistance(state.currentLocation, data.latLng) <= 500) {
-      //     playSound();
-      //     break;
-      //   }
-      // }
     } else {
       emit(state.copyWith(status: HomeStatus.initial, list: list));
     }
@@ -110,7 +117,8 @@ class HomeCubit extends Cubit<HomeState> {
       await Future.delayed(const Duration(seconds: 23), () async {
         if (!state.isPause) {
           for (var data in state.list ?? []) {
-            if (MapUtils.getDistance(state.currentLocation, data.latLng) <= 500) {
+            if (MapUtils.getDistance(state.currentLocation, data.latLng) <=
+                500) {
               playSound();
               break;
             }

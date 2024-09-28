@@ -22,7 +22,7 @@ class MapUtils {
             math.sin(dLon / 2);
     var c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
 
-    return earthRadiusKm * c;
+    return (earthRadiusKm * c) * 1000; // return distance in meters
   }
 
   static LatLngBounds boundsFromLatLngList(List<LatLng> list) {

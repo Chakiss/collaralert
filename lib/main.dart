@@ -24,8 +24,8 @@ Future<void> main() async {
   // final fcmToken = await messaging.getToken();
   // print("fcmToken: $fcmToken");
   await Firebase.initializeApp();
-  await Future.delayed(Duration(seconds: 1));
-  String? token = await FirebaseMessaging.instance.getToken();
+  await Future.delayed(const Duration(seconds: 1));
+  String? fcmToken = await FirebaseMessaging.instance.getToken();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   await _requestPermissions(flutterLocalNotificationsPlugin);
@@ -183,7 +183,6 @@ class MyApp extends StatelessWidget {
       },
     );
 
-    
     flutterLocalNotificationsPlugin.initialize(InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsDarwin));
