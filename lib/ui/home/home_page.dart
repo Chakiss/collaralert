@@ -121,24 +121,50 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               children: [
                                 Expanded(
-                                    child: Text("Collar ID : ${collar.id}")),
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        const TextSpan(
+                                          text: 'Collar ID: ', // Normal text
+                                        ),
+                                        TextSpan(
+                                          text: '${collar.id}', // Bold text
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(
                               height: 4,
                             ),
+
                             Row(
                               children: [
                                 const Text("Distance: "),
                                 Expanded(
                                   child: Text(
-                                    // "${MapUtils.getDistance(state.currentLocation, collar.latLng).toStringAsFixed(2)} KM",
-                                    "${decimalFormat.format(MapUtils.getDistance(state.currentLocation, collar.latLng))} KM",
+                                    // Check the distance and format accordingly
+                                    () {
+                                      final distance = MapUtils.getDistance(
+                                          state.currentLocation, collar.latLng);
+                                      if (distance < 1000) {
+                                        return "${decimalFormat.format(distance)} M."; // Display in meters
+                                      } else {
+                                        return "${decimalFormat.format(distance / 1000)} KM."; // Display in kilometers
+                                      }
+                                    }(),
                                     style: TextStyle(
-                                        color: _getTextColorByDistance(
-                                            MapUtils.getDistance(
-                                                state.currentLocation,
-                                                collar.latLng))),
+                                      fontWeight: FontWeight.bold,
+                                      color: _getTextColorByDistance(
+                                        MapUtils.getDistance(
+                                            state.currentLocation,
+                                            collar.latLng),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -150,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 Expanded(
                                     child: Text(
-                                        "Current Produced: ${collar.currentProduced}"))
+                                        "Latitude: ${state.currentLocation.latitude}"))
                               ],
                             ),
                             const SizedBox(
@@ -160,32 +186,32 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 Expanded(
                                     child: Text(
-                                        "Current Used: ${collar.currentUsed}"))
+                                        "Longitude:  ${state.currentLocation.longitude}"))
                               ],
                             ),
                             const SizedBox(
                               height: 4,
                             ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Text(
-                                        "Voltage Produced: ${collar.voltageProduced}"))
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Text(
-                                        "Voltage Produced: ${collar.voltageUsed}"))
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
+                            // Row(
+                            //   children: [
+                            //     Expanded(
+                            //         child: Text(
+                            //             "Voltage Produced: ${collar.voltageProduced}"))
+                            //   ],
+                            // ),
+                            // const SizedBox(
+                            //   height: 4,
+                            // ),
+                            // Row(
+                            //   children: [
+                            //     Expanded(
+                            //         child: Text(
+                            //             "Voltage Produced: ${collar.voltageUsed}"))
+                            //   ],
+                            // ),
+                            // const SizedBox(
+                            //   height: 4,
+                            // ),
                             Row(
                               children: [
                                 Expanded(
@@ -233,14 +259,14 @@ class _HomePageState extends State<HomePage> {
 }
 
 Color? _getTextColorByDistance(double distance) {
-  if (distance >= 801 && distance <= 999) {
+  if (distance >= 801) {
     return Colors.green;
   }
   if (distance >= 501 && distance <= 800) {
     return Colors.yellow;
   }
   if (distance >= 251 && distance <= 500) {
-    return Colors.red;
+    return Colors.orange;
   }
   if (distance >= 0 && distance <= 500) {
     return Colors.red;

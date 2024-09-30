@@ -31,12 +31,22 @@ class CollarModel {
     return CollarModel(
         id: id,
         latLng: LatLng(
-            snapshot["latitude"] as double, snapshot["longitude"] as double),
+            _toDouble(snapshot["latitude"]), _toDouble(snapshot["longitude"])),
         currentProduced: _getNumberValue(snapshot["current_produced"]),
         currentUsed: _getNumberValue(snapshot["current_used"]),
         voltageProduced: _getNumberValue(snapshot["voltage_produced"]),
         voltageUsed: _getNumberValue(snapshot["voltage_used"]),
         dateTime: snapshot["date_time"] as Timestamp?);
+  }
+}
+
+double _toDouble(dynamic value) {
+  if (value is int) {
+    return value.toDouble(); // Convert int to double
+  } else if (value is double) {
+    return value; // Return double as is
+  } else {
+    throw Exception("Value is neither int nor double: $value");
   }
 }
 
