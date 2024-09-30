@@ -39,7 +39,7 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(
     (message) async {
       await _firebaseMessagingBackgroundHandler(
-          flutterLocalNotificationsPlugin, message);
+          flutterLocalNotificationsPlugin, message, audioPlayer);
     },
   );
   runApp(MyApp(
@@ -104,9 +104,14 @@ Future<void> _firebaseMessagingForegroundHandler(
 
 Future<void> _firebaseMessagingBackgroundHandler(
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
-    RemoteMessage message) async {
+    RemoteMessage message,
+    AudioPlayer audioPlayer) async {
   print("Background Message");
   print("Message data: ${message.data}");
+  if ((message.data["sound"] as String?) == "alarm") {
+    await audioPlayer.release();
+    await audioPlayer.play(AssetSource("sound/alert_sound.mp3"));
+  }
   await _showNotification(flutterLocalNotificationsPlugin, message);
 }
 
